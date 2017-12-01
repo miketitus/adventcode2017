@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"os"
 	"strconv"
@@ -20,4 +22,11 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println(i)
+	// convert int to byte array
+	buf := new(bytes.Buffer)
+	err = binary.Write(buf, binary.LittleEndian, i)
+	if err != nil {
+		fmt.Println("binary.Write failed:", err)
+	}
+	fmt.Printf("% x", buf.Bytes())
 }
