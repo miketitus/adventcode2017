@@ -2,31 +2,36 @@ package main
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/binary"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 )
 
 func main() {
-	// get input, convert to int64
-	fmt.Print("Enter captcha: ")
 	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter captcha: ")
 	captcha, _ := reader.ReadString('\n')
 	captcha = strings.TrimSuffix(captcha, "\n")
-	i, err := strconv.ParseInt(captcha, 10, 64)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %v\n", err)
-		os.Exit(1)
+	digits := []byte(captcha)
+	// validate input, convert from ascii to integers
+	for i := 0; i < len(digits); i++ {
+		if digits[i] < 48 || digits[i] > 57 {
+			fmt.Println("Invalid input")
+			os.Exit(1)
+		} else {
+			digits[i] -= 48
+		}
 	}
-	fmt.Println(i)
-	// convert int to byte array
-	buf := new(bytes.Buffer)
-	err = binary.Write(buf, binary.LittleEndian, i)
-	if err != nil {
-		fmt.Println("binary.Write failed:", err)
+	// compute captcha sum
+	sum := 0
+	for i := 0; i < len(digits); i++ {
+		nextI := i + 1
+		if nextI == len(digits) {
+			nextI = 0
+		}
+		if digits[i] == digits[nextI] {
+			sum += int(digits[nextI])
+		}
 	}
-	fmt.Printf("% x", buf.Bytes())
+	fmt.Println(sum)
 }
