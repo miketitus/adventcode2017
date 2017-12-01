@@ -4,21 +4,20 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
+	// get input, convert to int64
 	fmt.Print("Enter captcha: ")
+	reader := bufio.NewReader(os.Stdin)
 	captcha, _ := reader.ReadString('\n')
-	fmt.Println(captcha)
-	digits := []byte(captcha)
-	// validate input, convert from ascii to integers
-	for i := 0; i < len(digits)-1; i++ {
-		if digits[i] < 48 || digits[i] > 57 {
-			// error
-		} else {
-			digits[i] -= 48
-		}
+	captcha = strings.TrimSuffix(captcha, "\n")
+	i, err := strconv.ParseInt(captcha, 10, 64)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
 	}
-	fmt.Println(digits)
+	fmt.Println(i)
 }
