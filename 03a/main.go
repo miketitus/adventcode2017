@@ -22,6 +22,7 @@ func main() {
 	memory, inputX, inputY := initialize(root)
 	fmt.Println(inputX, inputY)
 	print2D(memory)
+	navigate(memory, inputX, inputY)
 }
 
 func initialize(root int) ([][]int, int, int) {
@@ -67,6 +68,30 @@ func initialize(root int) ([][]int, int, int) {
 		}
 	}
 	return arry, inputX, inputY
+}
+
+func navigate(memory [][]int, x int, y int) {
+	fmt.Println("x,y = ", x, y)
+	steps := 0
+	var direction int
+	// move to center row
+	if x == 0 {
+		direction = DOWN
+	} else if memory[x][y] > memory[x-1][y] {
+		direction = UP
+	} else {
+		direction = DOWN
+	}
+	for memory[x][y] != 1 {
+		if UP == direction {
+			x--
+		} else {
+			x++
+		}
+		steps++
+	}
+	fmt.Println("x,y = ", x, y)
+	fmt.Println("steps = ", steps)
 }
 
 func print2D(a [][]int) {
