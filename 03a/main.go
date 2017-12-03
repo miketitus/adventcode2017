@@ -20,9 +20,11 @@ func main() {
 	root := int(math.Ceil(math.Sqrt(float64(INPUT))))
 	fmt.Println("root = ", root)
 	memory, inputX, inputY := initialize(root)
-	fmt.Println(inputX, inputY)
 	print2D(memory)
-	navigate(memory, inputX, inputY)
+	fmt.Println("inputX, inputY = ", inputX, inputY)
+	xSteps := math.Abs(float64(inputX - (root / 2)))
+	ySteps := math.Abs(float64(inputY - (root / 2)))
+	fmt.Println("xSteps, ySteps = ", xSteps, ySteps)
 }
 
 func initialize(root int) ([][]int, int, int) {
@@ -68,30 +70,6 @@ func initialize(root int) ([][]int, int, int) {
 		}
 	}
 	return arry, inputX, inputY
-}
-
-func navigate(memory [][]int, x int, y int) {
-	fmt.Println("x,y = ", x, y)
-	steps := 0
-	var direction int
-	// move to center row
-	if x == 0 {
-		direction = DOWN
-	} else if memory[x][y] > memory[x-1][y] {
-		direction = UP
-	} else {
-		direction = DOWN
-	}
-	for memory[x][y] != 1 {
-		if UP == direction {
-			x--
-		} else {
-			x++
-		}
-		steps++
-	}
-	fmt.Println("x,y = ", x, y)
-	fmt.Println("steps = ", steps)
 }
 
 func print2D(a [][]int) {
