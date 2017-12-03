@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"math"
+	"os"
 )
 
-const INPUT = 25
+const INPUT = 265149
 const (
 	INIT  = iota
 	RIGHT = iota
@@ -57,7 +58,6 @@ func main() {
 }
 
 func adjacentSum(a [][]int, x int, y int, root int) int {
-	//fmt.Println("x,y = ", x, y)
 	sum := 0
 	xSet := []int{x}
 	ySet := []int{y}
@@ -73,20 +73,19 @@ func adjacentSum(a [][]int, x int, y int, root int) int {
 	if y != root-1 {
 		ySet = append(ySet, y+1)
 	}
-	//fmt.Println("xSet = ", xSet)
-	//fmt.Println("ySet = ", ySet)
 	for i := range xSet {
 		for j := range ySet {
 			xVal := xSet[i]
 			yVal := ySet[j]
 			sum += a[xVal][yVal]
-			//fmt.Println("xVal, yVal, sum = ", xVal, yVal, sum)
 		}
 	}
 	if sum == 0 {
 		sum = 1
+	} else if sum > INPUT {
+		fmt.Println("result = ", sum)
+		os.Exit(0)
 	}
-	//fmt.Println("-------------")
 	return sum
 }
 
