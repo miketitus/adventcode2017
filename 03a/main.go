@@ -6,7 +6,7 @@ import (
 )
 
 //const input = 265149
-const input = 49
+const INPUT = 48
 const (
 	INIT  = iota
 	RIGHT = iota
@@ -17,12 +17,19 @@ const (
 
 func main() {
 	// calculate size of array square to hold data
-	root := int(math.Ceil(math.Sqrt(float64(input))))
+	root := int(math.Ceil(math.Sqrt(float64(INPUT))))
 	fmt.Println("root = ", root)
-	// initialize memory array
-	memory := make([][]int, root)
-	for i := range memory {
-		memory[i] = make([]int, root)
+	memory, inputX, inputY := initialize(root)
+	fmt.Println(inputX, inputY)
+	print2D(memory)
+}
+
+func initialize(root int) ([][]int, int, int) {
+	// initialize array
+	var inputX, inputY int
+	arry := make([][]int, root)
+	for i := range arry {
+		arry[i] = make([]int, root)
 	}
 	direction := INIT
 	x := int(root / 2)
@@ -34,28 +41,32 @@ func main() {
 			direction = RIGHT
 		case RIGHT:
 			y++
-			if memory[x-1][y] == 0 {
+			if arry[x-1][y] == 0 {
 				direction = UP
 			}
 		case LEFT:
 			y--
-			if memory[x+1][y] == 0 {
+			if arry[x+1][y] == 0 {
 				direction = DOWN
 			}
 		case UP:
 			x--
-			if memory[x][y-1] == 0 {
+			if arry[x][y-1] == 0 {
 				direction = LEFT
 			}
 		case DOWN:
 			x++
-			if memory[x][y+1] == 0 {
+			if arry[x][y+1] == 0 {
 				direction = RIGHT
 			}
 		}
-		memory[x][y] = j
+		arry[x][y] = j
+		if INPUT == j {
+			inputX = x
+			inputY = y
+		}
 	}
-	print2D(memory)
+	return arry, inputX, inputY
 }
 
 func print2D(a [][]int) {
