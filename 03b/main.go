@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const INPUT = 24
+const INPUT = 25
 const (
 	INIT  = iota
 	RIGHT = iota
@@ -26,7 +26,6 @@ func main() {
 	direction := INIT
 	x := int(root / 2)
 	y := int(root / 2)
-	fmt.Println("x,y = ", x, y)
 	for j := 1; j <= root*root; j++ {
 		switch direction {
 		case INIT:
@@ -58,23 +57,37 @@ func main() {
 }
 
 func adjacentSum(a [][]int, x int, y int, root int) int {
+	//fmt.Println("x,y = ", x, y)
+	sum := 0
 	xSet := []int{x}
 	ySet := []int{y}
-	if 0 != x {
+	if x != 0 {
 		xSet = append(xSet, x-1)
 	}
-	if root != x {
+	if x != root-1 {
 		xSet = append(xSet, x+1)
 	}
-	if 0 != y {
+	if y != 0 {
 		ySet = append(ySet, y-1)
 	}
-	if root != y {
+	if y != root-1 {
 		ySet = append(ySet, y+1)
 	}
-	fmt.Println("xSet = ", xSet)
-	fmt.Println("ySet = ", ySet)
-	return 1
+	//fmt.Println("xSet = ", xSet)
+	//fmt.Println("ySet = ", ySet)
+	for i := range xSet {
+		for j := range ySet {
+			xVal := xSet[i]
+			yVal := ySet[j]
+			sum += a[xVal][yVal]
+			//fmt.Println("xVal, yVal, sum = ", xVal, yVal, sum)
+		}
+	}
+	if sum == 0 {
+		sum = 1
+	}
+	//fmt.Println("-------------")
+	return sum
 }
 
 func print2D(a [][]int) {
