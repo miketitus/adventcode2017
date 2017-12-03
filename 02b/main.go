@@ -2,13 +2,13 @@ package main
 
 import "fmt"
 
-var data = [][]int{
+var data1 = [][]int{
 	{5, 9, 2, 8},
 	{9, 4, 7, 3},
 	{3, 8, 6, 5},
 }
 
-var data2 = [][]uint16{
+var data = [][]int{
 	{1364, 461, 1438, 1456, 818, 999, 105, 1065, 314, 99, 1353, 148, 837, 590, 404, 123},
 	{204, 99, 235, 2281, 2848, 3307, 1447, 3848, 3681, 963, 3525, 525, 288, 278, 3059, 821},
 	{280, 311, 100, 287, 265, 383, 204, 380, 90, 377, 398, 99, 194, 297, 399, 87},
@@ -28,12 +28,17 @@ var data2 = [][]uint16{
 }
 
 func main() {
-	//sum := 0
+	sum := 0
 	for i := 0; i < len(data); i++ {
 		pairs := combination(data[i], 0)
-		fmt.Println(pairs)
+		for _, p := range pairs {
+			if p[0]%p[1] == 0 {
+				// found even divisor
+				sum += p[0] / p[1]
+			}
+		}
 	}
-	//fmt.Println(sum)
+	fmt.Println(sum)
 }
 
 func combination(row []int, startAt int) [][]int {
