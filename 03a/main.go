@@ -5,8 +5,7 @@ import (
 	"math"
 )
 
-//const input = 265149
-const INPUT = 48
+const INPUT = 265149
 const (
 	INIT  = iota
 	RIGHT = iota
@@ -19,15 +18,14 @@ func main() {
 	// calculate size of array square to hold data
 	root := int(math.Ceil(math.Sqrt(float64(INPUT))))
 	fmt.Println("root = ", root)
-	memory, inputX, inputY := initialize(root)
-	print2D(memory)
+	inputX, inputY := initialize(root)
 	fmt.Println("inputX, inputY = ", inputX, inputY)
 	xSteps := math.Abs(float64(inputX - (root / 2)))
 	ySteps := math.Abs(float64(inputY - (root / 2)))
-	fmt.Println("xSteps, ySteps = ", xSteps, ySteps)
+	fmt.Println("steps, xSteps, ySteps = ", (xSteps + ySteps), xSteps, ySteps)
 }
 
-func initialize(root int) ([][]int, int, int) {
+func initialize(root int) (int, int) {
 	// initialize array
 	var inputX, inputY int
 	arry := make([][]int, root)
@@ -69,7 +67,8 @@ func initialize(root int) ([][]int, int, int) {
 			inputY = y
 		}
 	}
-	return arry, inputX, inputY
+	// print2D(arry)
+	return inputX, inputY
 }
 
 func print2D(a [][]int) {
