@@ -21,17 +21,18 @@ func main() {
         rebalance(banks, maxBlock)
         cycles++
         // test for previous state
-        //fmt.Println("states ", states)
         for _, s := range states {
-            //fmt.Println("testing ", banks, s)
             if s == fmt.Sprint(banks) {
                 break Outer
             }
         }
         // store current state
         states = append(states, fmt.Sprint(banks))
+        if cycles % 1000 == 0 {
+            fmt.Println("cycles =", cycles)
+        }
     }
-    fmt.Println(cycles)
+    fmt.Println("cycles =", cycles)
     fmt.Println(banks)
 }
 
