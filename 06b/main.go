@@ -12,6 +12,7 @@ var banks = []bank{11, 11, 13, 7, 0, 15, 5, 5, 4, 4, 1, 1, 7, 1, 15, 11}
 func main() {
     fmt.Println(banks)
     cycles := 0
+    loopStart := 0
     states := []string{}
     states = append(states, fmt.Sprint(banks))
     Outer:
@@ -21,8 +22,9 @@ func main() {
         rebalance(banks, maxBlock)
         cycles++
         // test for previous state
-        for _, s := range states {
+        for i, s := range states {
             if s == fmt.Sprint(banks) {
+                loopStart = i
                 break Outer
             }
         }
@@ -33,6 +35,8 @@ func main() {
         }
     }
     fmt.Println("cycles =", cycles)
+    fmt.Println("loopStart =", loopStart)
+    fmt.Println("loopSize =", cycles - loopStart)
     fmt.Println(banks)
 }
 
