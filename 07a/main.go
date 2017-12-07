@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var input = []string{
+var input1 = []string{
 	"xhth (11)",
 	"havc (22)",
 	"ktlj (33)",
@@ -14,7 +14,7 @@ var input = []string{
 	"cntj (55)",
 }
 
-var input1 = []string{
+var input = []string{
 	"pbga (66)",
 	"xhth (57)",
 	"ebii (61)",
@@ -34,23 +34,34 @@ type program struct {
 	name     string
 	weight   string
 	parent   *program
-	children []program
+	children []*program
 }
 
-var nodes = make(map[string]program)
+func (p *program) addChild(c *program) {
+	// fmt.Printf("adding child %p to parent %p\n", c, p)
+	p.children = append(p.children, c)
+}
+
+var nodes = make(map[string]*program)
 
 func main() {
 	for _, line := range input {
 		parseLine(line)
 	}
 	printNodes()
+	// find root program (no parents)
+	for _, p := range nodes {
+		if p.parent == nil {
+			fmt.Printf("%s is the root node\n", p.name)
+		}
+	}
 }
 
 func parseLine(line string) {
 	words := strings.Split(line, " ")
 	n := words[0]
 	w := words[1][1:3]
-	addProgram(n, w, nil, []program{})
+	addProgram(n, w, nil, nil)
 	if len(words) >= 4 {
 		// has children
 		parseChildren(words)
@@ -65,16 +76,16 @@ func parseChildren(words []string) {
 	}
 	for _, child := range words[3:] {
 		n := strings.TrimSuffix(child, ",")
-		addProgram(n, "", &parent, []program{})
+		c := addProgram(n, "", parent, nil)
+		parent.addChild(c)
 	}
 }
 
-func addProgram(n string, w string, p *program, c []program) {
+func addProgram(n string, w string, p *program, c []*program) *program {
 	prog, ok := nodes[n]
 	if ok {
 		// node exists, just update state
 		if prog.weight == "" {
-			fmt.Printf("changing weight from %s to %s\n", prog.weight, w)
 			prog.weight = w
 		}
 		if prog.parent == nil {
@@ -83,15 +94,16 @@ func addProgram(n string, w string, p *program, c []program) {
 		if len(c) > 0 {
 			prog.children = append(prog.children, c...)
 		}
-		fmt.Print("found ")
-		printNode(prog)
+		/*fmt.Print("found ")
+		printNode(prog)*/
 	} else {
 		// create new node
-		prog = program{name: n, weight: w, parent: p, children: c}
+		prog = &program{name: n, weight: w, parent: p, children: c}
 		nodes[n] = prog
-		fmt.Print("created ")
-		printNode(prog)
+		/*fmt.Print("created ")
+		printNode(&newProg)*/
 	}
+	return prog
 }
 
 func printNodes() {
@@ -100,11 +112,10 @@ func printNodes() {
 	}
 }
 
-func printNode(p program) {
-	/*prntName := ""
+func printNode(p *program) {
+	prntName := ""
 	if p.parent != nil {
 		prntName = p.parent.name
-	}*/
-	//fmt.Printf("%s (%s) %v %v\n", p.name, p.weight, p.parent, prntName)
-	fmt.Printf("%s at %p\n", p.name, &p)
+	}
+	fmt.Printf("%p:%s  (%s)  %p:%v  %v\n", p, p.name, p.weight, p.parent, prntName, p.children)
 }
