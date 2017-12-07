@@ -7,13 +7,11 @@ import (
 )
 
 var input = []string{
-	"pbga (00)",
 	"xhth (11)",
-	"ebii (22)",
-	"havc (33)",
-	"ktlj (44)",
-	"fwft (55) -> ktlj, cntj, xhth",
-	"cntj (66)",
+	"havc (22)",
+	"ktlj (33)",
+	"fwft (44) -> ktlj, cntj, xhth",
+	"cntj (55)",
 }
 
 var input1 = []string{
@@ -76,6 +74,7 @@ func addProgram(n string, w string, p *program, c []program) {
 	if ok {
 		// node exists, just update state
 		if prog.weight == "" {
+			fmt.Printf("changing weight from %s to %s\n", prog.weight, w)
 			prog.weight = w
 		}
 		if prog.parent == nil {
@@ -102,9 +101,10 @@ func printNodes() {
 }
 
 func printNode(p program) {
-	prntName := ""
+	/*prntName := ""
 	if p.parent != nil {
 		prntName = p.parent.name
-	}
-	fmt.Printf("%s (%s) %v %v\n", p.name, p.weight, p.parent, prntName)
+	}*/
+	//fmt.Printf("%s (%s) %v %v\n", p.name, p.weight, p.parent, prntName)
+	fmt.Printf("%s at %p\n", p.name, &p)
 }
