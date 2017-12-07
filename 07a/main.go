@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -1895,7 +1896,7 @@ var input = []string{
 
 type program struct {
 	name     string
-	weight   string
+	weight   int
 	parent   *program
 	children []*program
 }
@@ -1922,8 +1923,9 @@ func main() {
 func parseLine(line string) {
 	words := strings.Split(line, " ")
 	n := words[0]
-	w := words[1][1 : len(words[1])-1]
-	addProgram(n, w, nil, nil)
+	ws := words[1][1 : len(words[1])-1]
+	wi, _ := strconv.ParseInt(ws, 10, 0)
+	addProgram(n, int(wi), nil, nil)
 	if len(words) >= 4 {
 		// has children
 		parseChildren(words)
@@ -1938,16 +1940,16 @@ func parseChildren(words []string) {
 	}
 	for _, child := range words[3:] {
 		n := strings.TrimSuffix(child, ",")
-		c := addProgram(n, "", parent, nil)
+		c := addProgram(n, 0, parent, nil)
 		parent.addChild(c)
 	}
 }
 
-func addProgram(n string, w string, p *program, c []*program) *program {
+func addProgram(n string, w int, p *program, c []*program) *program {
 	prog, ok := nodes[n]
 	if ok {
 		// node exists, just update state
-		if prog.weight == "" {
+		if prog.weight == 0 {
 			prog.weight = w
 		}
 		if prog.parent == nil {
@@ -1975,5 +1977,5 @@ func printNode(p *program) {
 	if p.parent != nil {
 		prntName = p.parent.name
 	}
-	fmt.Printf("%p:%s  (%s)  %p:%v  %v\n", p, p.name, p.weight, p.parent, prntName, p.children)
+	fmt.Printf("%p:%s  (%d)  %p:%v  %v\n", p, p.name, p.weight, p.parent, prntName, p.children)
 }
