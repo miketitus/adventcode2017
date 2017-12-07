@@ -2,10 +2,21 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
 var input = []string{
+	"pbga (00)",
+	"xhth (11)",
+	"ebii (22)",
+	"havc (33)",
+	"ktlj (44)",
+	"fwft (55) -> ktlj, cntj, xhth",
+	"cntj (66)",
+}
+
+var input1 = []string{
 	"pbga (66)",
 	"xhth (57)",
 	"ebii (61)",
@@ -24,6 +35,7 @@ var input = []string{
 type program struct {
 	name     string
 	weight   string
+	parent   *program
 	children []program
 }
 
@@ -31,34 +43,68 @@ var nodes = make(map[string]program)
 
 func main() {
 	for _, line := range input {
-		p := parseLine(line)
-		fmt.Println(p)
+		parseLine(line)
 	}
-	fmt.Println(nodes)
+	printNodes()
 }
 
-func parseLine(line string) program {
-	childs := []program{}
+func parseLine(line string) {
 	words := strings.Split(line, " ")
-	if len(words) >= 4 {
-		// has children
-		childs = parseChildren(words)
-	}
 	n := words[0]
 	w := words[1][1:3]
-	p := program{name: n, weight: w, children: childs}
-	nodes[n] = p
-	return p
+	addProgram(n, w, nil, []program{})
+	if len(words) >= 4 {
+		// has children
+		parseChildren(words)
+	}
 }
 
-func parseChildren(words []string) []program {
-	c := []program{}
+func parseChildren(words []string) {
+	parent, ok := nodes[words[0]]
+	if !ok {
+		fmt.Fprintf(os.Stderr, "parent %s not found", words[0])
+		os.Exit(1)
+	}
 	for _, child := range words[3:] {
 		n := strings.TrimSuffix(child, ",")
-		_, ok := nodes[n]
-		if ok {
-			fmt.Println("found ", n)
-		}
+		addProgram(n, "", &parent, []program{})
 	}
-	return c
+}
+
+func addProgram(n string, w string, p *program, c []program) {
+	prog, ok := nodes[n]
+	if ok {
+		// node exists, just update state
+		if prog.weight == "" {
+			prog.weight = w
+		}
+		if prog.parent == nil {
+			prog.parent = p
+		}
+		if len(c) > 0 {
+			prog.children = append(prog.children, c...)
+		}
+		fmt.Print("found ")
+		printNode(prog)
+	} else {
+		// create new node
+		prog = program{name: n, weight: w, parent: p, children: c}
+		nodes[n] = prog
+		fmt.Print("created ")
+		printNode(prog)
+	}
+}
+
+func printNodes() {
+	for _, prog := range nodes {
+		printNode(prog)
+	}
+}
+
+func printNode(p program) {
+	prntName := ""
+	if p.parent != nil {
+		prntName = p.parent.name
+	}
+	fmt.Printf("%s (%s) %v %v\n", p.name, p.weight, p.parent, prntName)
 }
