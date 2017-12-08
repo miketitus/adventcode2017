@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var input = []string{
+var input1 = []string{
 	"pbga (66)",
 	"xhth (57)",
 	"ebii (61)",
@@ -18,12 +18,12 @@ var input = []string{
 	"padx (45) -> pbga, havc, qoyq",
 	"tknk (41) -> ugml, padx, fwft",
 	"jptl (61)",
-	"ugml (68) -> gyxo, ebii, jptl",
+	"ugml (60) -> gyxo, ebii, jptl",
 	"gyxo (61)",
 	"cntj (57)",
 }
 
-var input1 = []string{
+var input = []string{
 	"navfz (187) -> jviwcde, wfwor, vpfabxa",
 	"adtfnx (74)",
 	"endsg (33)",
@@ -1931,27 +1931,41 @@ func main() {
 		}
 	}
 	root.calcTotalWeight()
-	printNode(root)
 	findUnbalanced(root)
+	node, _ := nodes["tulwp"]
+	printTree(node, 0)
 }
 
-func findUnbalanced(p *program) *program {
+func printTree(p *program, indent int) {
+	for i := 0; i < indent*2; i++ {
+		fmt.Print(" ")
+	}
+	fmt.Printf("%s %d %d\n", p.name, p.weight, p.totalWeight)
+	for _, c := range p.children {
+		printTree(c, indent+1)
+	}
+}
+
+func findUnbalanced(p *program) {
 	if len(p.children) > 0 {
 		lastWeight := 0
 		oddMan := 0
 		for i, c := range p.children {
-			fmt.Printf("%d = %d\n", i, c.totalWeight)
+			fmt.Printf("%d %s = %d\n", i, c.name, c.totalWeight)
 			if lastWeight == 0 {
 				lastWeight = c.totalWeight
 			} else if lastWeight != c.totalWeight {
 				lastWeight = c.totalWeight
-				oddMan = i - 1
+				if i == len(p.children)-1 {
+					oddMan = i
+				} else {
+					oddMan = i - 1
+				}
 			}
 		}
-		fmt.Printf("%s oddman = %d\n", p.name, oddMan)
-		return p.children[oddMan]
+		fmt.Printf("%s (%d)(%d) oddman = %d\n", p.name, p.weight, p.totalWeight, oddMan)
+		findUnbalanced(p.children[oddMan])
 	}
-	return nil
 }
 
 func parseLine(line string) {
