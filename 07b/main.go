@@ -1932,7 +1932,26 @@ func main() {
 	}
 	root.calcTotalWeight()
 	printNode(root)
-	//printNodes()
+	findUnbalanced(root)
+}
+
+func findUnbalanced(p *program) *program {
+	if len(p.children) > 0 {
+		lastWeight := 0
+		oddMan := 0
+		for i, c := range p.children {
+			fmt.Printf("%d = %d\n", i, c.totalWeight)
+			if lastWeight == 0 {
+				lastWeight = c.totalWeight
+			} else if lastWeight != c.totalWeight {
+				lastWeight = c.totalWeight
+				oddMan = i - 1
+			}
+		}
+		fmt.Printf("%s oddman = %d\n", p.name, oddMan)
+		return p.children[oddMan]
+	}
+	return nil
 }
 
 func parseLine(line string) {
