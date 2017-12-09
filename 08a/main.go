@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -21,15 +22,43 @@ type instruction struct {
 	condValue int
 }
 
-func (*instruction) execute() {
-
+func (i *instruction) execute() {
+	// evaluate conditional
+	isTrue := false
+	switch i.condOper {
+	case "<":
+		isTrue = registers[i.condReg] < i.condValue
+	case "<=":
+		isTrue = registers[i.condReg] <= i.condValue
+	case ">":
+		isTrue = registers[i.condReg] > i.condValue
+	case ">=":
+		isTrue = registers[i.condReg] >= i.condValue
+	case "==":
+		isTrue = registers[i.condReg] == i.condValue
+	case "!=":
+		isTrue = registers[i.condReg] != i.condValue
+	default:
+		fmt.Fprintf(os.Stderr, "unknown conditional '%s'\n", i.condOper)
+		os.Exit(1)
+	}
+	if isTrue {
+		registers[i.register] += i.offset
+	} else {
+		fmt.Printf("%s %s %d FALSE\n", i.condReg, i.condOper, i.condValue)
+	}
 }
 
 var registers = make(map[string]int)
 
 func main() {
 	instructions := parseInput()
-	fmt.Println(instructions)
+	//fmt.Println(instructions)
+	for _, i := range instructions {
+		i.execute()
+	}
+	//fmt.Println(registers)
+	findLargestReg()
 }
 
 func parseInput() []instruction {
@@ -58,4 +87,16 @@ func createRegister(register string) {
 	if !ok {
 		registers[register] = 0
 	}
+}
+
+func findLargestReg() {
+	maxKey := ""
+	maxValue := 0
+	for k, v := range registers {
+		if maxValue < v {
+			maxKey = k
+			maxValue = v
+		}
+	}
+	fmt.Printf("Largest value is %d in %s\n", maxValue, maxKey)
 }
