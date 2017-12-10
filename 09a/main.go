@@ -3,21 +3,23 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"strings"
+
+	"github.com/golang-collections/collections/stack"
 )
 
-var input1 = []string{
-	"<abc>",
+var input = []string{
 	"{}",
 	"{{{}}}",
 	"{{},{}}",
 	"{{{},{},{{}}}}",
-	"{<{},{},{{}}>}",
 	"{<a>,<a>,<a>,<a>}",
-	"{{<a>},{<a>},{<a>},{<a>}}",
-	"{{<!>},{<!>},{<!>},{<a>}}",
+	"{{<ab>},{<ab>},{<ab>},{<ab>}}",
+	"{{<!!>},{<!!>},{<!!>},{<!!>}}",
+	"{{<a!>},{<a!>},{<a!>},{<ab>}}",
 }
 
-var input = []string{
+var input1 = []string{
 	"{z}",
 	"{b},{c}",
 	"{{d},{e}}",
@@ -27,7 +29,6 @@ var input = []string{
 var negateRE = regexp.MustCompile("([\\!].)")
 var garbageRE = regexp.MustCompile("<[^>]*>")
 var contentRE = regexp.MustCompile("[^{}]")
-var groupRE = regexp.MustCompile("{(?:{})*}")
 
 func chopNegates(s string) string {
 	return negateRE.ReplaceAllString(s, "")
@@ -42,34 +43,30 @@ func chopContent(s string) string {
 }
 
 func countGroups(s string) int {
-	fmt.Println("countGroups: ", s)
-	groups := 0
-	if len(s) > 0 {
-		subs := groupRE.FindAllStringSubmatch(s, -1)
-		if len(subs) > 0 {
-			fmt.Printf("FindAllStringSubmatch %v\n", subs)
-			for _, sub := range subs {
-				sub2 := sub[0] // strip nesting
-				// remove outer {} and check inner string
-				end := len(sub2) - 1
-				groups += countGroups(sub2[1:end]) + 1
-			}
-		}
+	// build stack of counted groups
+	st := stack.New()
+	for len(s) > 0 {
+		st.Push(strings.Count(s, "{}"))
+		s = strings.Replace(s, "{}", "", -1)
 	}
-	return groups
+	// iterate stack and calculate score
+	level := 0
+	score := 0
+	for st.Len() > 0 {
+		level++
+		score += st.Pop().(int) * level
+	}
+	fmt.Printf("level = %d, score = %d\n", level, score)
+	return score
 }
 
 func main() {
+	totalScore := 0
 	for _, line := range input {
-		fmt.Println("--------------")
-		//fmt.Println("orig: ", line)
 		line = chopNegates(line)
-		//fmt.Println("chopN: ", line)
 		line = chopGarbage(line)
-		//fmt.Println("chopG: ", line)
 		line = chopContent(line)
-		//fmt.Println("chopC: ", line)
-		groups := countGroups(line)
-		fmt.Println("groups =", groups)
+		totalScore += countGroups(line)
 	}
+	fmt.Println("totalScore =", totalScore)
 }
