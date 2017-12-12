@@ -3,23 +3,21 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"strconv"
 )
 
-const size = 5
+const size = 256
 
 var list circularList
-var input = []int{3, 4}
-var input1 = []int{
+var input = []int{
 	83, 0, 193, 1, 254, 237, 187, 40, 88, 27, 2, 255, 149, 29, 42, 100,
 }
 
 type cNode struct {
 	index int
 	value int
-	next  *cNode
 	prev  *cNode
+	next  *cNode
 }
 
 type circularList struct {
@@ -59,13 +57,10 @@ func (cl *circularList) len() int {
 
 func (cl *circularList) swapSection(start, length int) {
 	if length <= 1 {
-		fmt.Printf("skipping length %d at start %d\n", length, start)
 		return
 	}
 	left := cl.getNodeAt(start)
 	right := cl.getNodeAt(start + length - 1)
-	fmt.Printf("left:  %p  %v\n", left, left)
-	fmt.Printf("right:  %p  %v\n", right, right)
 	origLindex := left.index
 	origLnext := left.next
 	origLprev := left.prev
@@ -74,19 +69,29 @@ func (cl *circularList) swapSection(start, length int) {
 	origRprev := right.prev
 	// update target nodes
 	left.index = origRindex
-	left.next = origRnext
+	right.index = origLindex
 	if length == 2 {
+		left.next = origRnext
 		left.prev = right
 		right.next = left
-	} else {
+		right.prev = origLprev
+	} else if length == cl.len() {
+		// nodes are adjacent, reversed
+		left.next = right
 		left.prev = origRprev
 		right.next = origLnext
+		right.prev = left
+	} else {
+		left.next = origRnext
+		left.prev = origRprev
+		right.next = origLnext
+		right.prev = origLprev
 	}
-	right.index = origLindex
-	right.prev = origLprev
-	// update "exterior" nodes
-	origLprev.next = right
-	origRnext.prev = left
+	if length < cl.len() {
+		// update "exterior" nodes
+		origLprev.next = right
+		origRnext.prev = left
+	}
 	// update "interior" nodes, if any
 	if length > 2 {
 		origLnext.prev = right
@@ -98,8 +103,6 @@ func (cl *circularList) swapSection(start, length int) {
 	} else if right.index == 0 {
 		cl.zeroNode = right
 	}
-	fmt.Printf("left:  %p  %v\n", left, left)
-	fmt.Printf("right:  %p  %v\n", right, right)
 	if length > 3 {
 		cl.swapSection(start+1, length-2)
 	}
@@ -111,17 +114,11 @@ func (cl circularList) String() string {
 		// write nothing
 	} else {
 		buf.WriteRune(' ')
-		orig := cl.zeroNode
 		for start := cl.zeroNode; ; start = start.next {
-			//buf.WriteString(strconv.Itoa(start.index))
-			//buf.WriteRune(':')
 			buf.WriteString(strconv.Itoa(start.value))
 			buf.WriteRune(' ')
 			if start.next == cl.zeroNode {
 				break
-			} else if start.next == orig {
-				fmt.Println("Found infinite loop in list")
-				os.Exit(1)
 			}
 		}
 	}
@@ -144,7 +141,7 @@ func main() {
 		position += length + skipSize
 		position = position % list.len()
 		skipSize++
-		fmt.Printf("pos:%d, ss:%d\n", position, skipSize)
-		fmt.Printf("list:%v\n", list)
 	}
+	fmt.Printf("pos:%d, ss:%d\n", position, skipSize)
+	fmt.Printf("list: %v\n", list)
 }
