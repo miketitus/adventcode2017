@@ -9,7 +9,7 @@ import (
 const size = 5
 
 var list circularList
-var input = []int{3, 4}
+var input = []int{3}
 var input1 = []int{
 	83, 0, 193, 1, 254, 237, 187, 40, 88, 27, 2, 255, 149, 29, 42, 100,
 }
@@ -39,23 +39,39 @@ func (cl *circularList) addNode(cn *cNode) {
 	}
 }
 
-func (cl *circularList) getNode(startAt, offset int) *cNode {
-	// find startAt node
+func (cl *circularList) getNodeAt(index int) *cNode {
 	node := cl.zeroNode
-	for i := 0; i < startAt; i++ {
+	for i := 0; i < index; i++ {
 		node = node.next
 	}
-	// find offset node
-	for j := offset; j != 0; {
-		if j > 0 {
-			node = node.next
-			j--
-		} else {
-			node = node.prev
-			j++
-		}
-	}
 	return node
+}
+
+func (cl *circularList) swapSection(start, length int) {
+	if length <= 1 {
+		fmt.Printf("skipping length %d at start %d", length, start)
+		return
+	}
+	left := cl.getNodeAt(start)
+	right := cl.getNodeAt(start + length - 1)
+	fmt.Printf("left: %v, right: %v\n", left, right)
+	origLnext := left.next
+	origLprev := left.prev
+	origRnext := right.next
+	origRprev := right.prev
+	// update target nodes
+	left.next = origRnext
+	left.prev = origRprev
+	right.prev = origLprev
+	right.next = origLnext
+	// update "exterior" nodes
+	origLprev.next = right
+	origRnext.prev = left
+	// update "interior" nodes, if any
+	if length > 2 {
+		origLnext.prev = right
+		origRprev.next = left
+	}
 }
 
 func (cl circularList) String() string {
@@ -83,6 +99,8 @@ func main() {
 		node := cNode{value: i}
 		list.addNode(&node)
 	}
+	fmt.Println(list)
+	list.swapSection(0, 3)
 	fmt.Println(list)
 	// process input
 	/*
