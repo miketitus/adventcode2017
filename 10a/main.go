@@ -39,6 +39,25 @@ func (cl *circularList) addNode(cn *cNode) {
 	}
 }
 
+func (cl *circularList) getNode(startAt, offset int) *cNode {
+	// find startAt node
+	node := cl.zeroNode
+	for i := 0; i < startAt; i++ {
+		node = node.next
+	}
+	// find offset node
+	for j := offset; j != 0; {
+		if j > 0 {
+			node = node.next
+			j--
+		} else {
+			node = node.prev
+			j++
+		}
+	}
+	return node
+}
+
 func (cl circularList) String() string {
 	buf := bytes.NewBufferString("[")
 	if cl.zeroNode == nil {
@@ -77,11 +96,4 @@ func main() {
 			fmt.Printf("list:%v\n", list)
 		}
 	*/
-}
-
-func reverseSection(p, l int) {
-	if l <= 1 {
-		// nothing to reverse
-		return
-	}
 }
