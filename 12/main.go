@@ -13,6 +13,7 @@ type program struct {
 	rawpipes []string
 	pipes    []*program
 	coolkid  bool
+	parsed   bool
 }
 
 func (p *program) String() string {
@@ -20,6 +21,77 @@ func (p *program) String() string {
 	buf.WriteRune(':')
 	buf.WriteString(strconv.FormatBool(p.coolkid))
 	return buf.String()
+}
+
+var programs = make(map[string]*program)
+
+func main() {
+	for _, line := range input {
+		parseLine(line)
+	}
+	for _, prog := range programs {
+		parsePipes(prog)
+	}
+	// must iterate map in key order to start with 0
+	coolKids := 0
+	keys := make([]string, 0)
+	for k := range programs {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		prog := programs[k]
+		findCoolKids(prog)
+		if prog.coolkid {
+			coolKids++
+		}
+		//fmt.Printf("%d : %v : %v\n", prog.id, prog.coolkid, prog.parsed)
+	}
+	fmt.Println("coolKids =", coolKids)
+}
+
+func parseLine(line string) {
+	words := strings.Split(line, " ")
+	id, _ := strconv.Atoi(words[0])
+	pipes := words[2:]
+	for i, pipe := range pipes {
+		pipes[i] = strings.TrimSuffix(pipe, ",")
+	}
+	p := program{id: id, rawpipes: pipes}
+	programs[words[0]] = &p
+}
+
+func parsePipes(p *program) {
+	for _, remoteID := range p.rawpipes {
+		p.pipes = append(p.pipes, programs[remoteID])
+	}
+}
+
+func findCoolKids(p *program) {
+	if p.id == 0 {
+		p.coolkid = true
+	}
+	if p.coolkid && !p.parsed {
+		//fmt.Printf("parsing %d %p\n", p.id, p)
+		// share the coolness
+		p.parsed = true
+		for i := range p.pipes {
+			remote := p.pipes[i]
+			if remote.parsed {
+				// skip it
+				//fmt.Printf("%d %p already parsed\n", remote.id, remote)
+			} else if remote.coolkid {
+				// skip it
+				//fmt.Printf("%d %p already cool\n", remote.id, remote)
+			} else {
+				//fmt.Printf("recursing %d %p\n", remote.id, remote)
+				remote.coolkid = true
+				findCoolKids(remote)
+			}
+		}
+	} else {
+		//fmt.Println("skipping ", p.id)
+	}
 }
 
 var input = []string{
@@ -2024,6 +2096,7 @@ var input = []string{
 	"1998 <-> 1300",
 	"1999 <-> 175, 1161",
 }
+
 var test = []string{
 	"0 <-> 2",
 	"1 <-> 1",
@@ -2032,61 +2105,4 @@ var test = []string{
 	"4 <-> 2, 3, 6",
 	"5 <-> 6",
 	"6 <-> 4, 5",
-}
-var programs = make(map[string]*program)
-
-func main() {
-	for _, line := range test {
-		parseLine(line)
-	}
-	for _, prog := range programs {
-		parsePipes(prog)
-	}
-	// must iterate map in key order
-	coolKids := 0
-	keys := make([]string, 0)
-	for k := range programs {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		prog := programs[k]
-		findCoolKids(prog)
-		if prog.coolkid {
-			coolKids++
-		}
-		//fmt.Printf("%d : %v\n", prog.id, prog.coolkid)
-	}
-	fmt.Println("coolKids =", coolKids)
-}
-
-func parseLine(line string) {
-	words := strings.Split(line, " ")
-	id, _ := strconv.Atoi(words[0])
-	pipes := words[2:]
-	for i, pipe := range pipes {
-		pipes[i] = strings.TrimSuffix(pipe, ",")
-	}
-	p := program{id: id, rawpipes: pipes}
-	programs[words[0]] = &p
-}
-
-func parsePipes(p *program) {
-	for _, remoteID := range p.rawpipes {
-		p.pipes = append(p.pipes, programs[remoteID])
-	}
-}
-
-func findCoolKids(p *program) {
-	if p.id == 0 {
-		p.coolkid = true
-	}
-	// share the coolness
-	for _, remote := range p.pipes {
-		if p.coolkid && !remote.coolkid {
-			remote.coolkid = true
-		} else if !p.coolkid && remote.coolkid {
-			p.coolkid = true
-		}
-	}
 }
