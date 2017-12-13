@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
 	"strconv"
@@ -12,6 +13,13 @@ type program struct {
 	rawpipes []string
 	pipes    []*program
 	coolkid  bool
+}
+
+func (p *program) String() string {
+	buf := bytes.NewBufferString(strconv.Itoa(p.id))
+	buf.WriteRune(':')
+	buf.WriteString(strconv.FormatBool(p.coolkid))
+	return buf.String()
 }
 
 var input = []string{
@@ -39,7 +47,9 @@ func main() {
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		findCoolKids(programs[k])
+		prog := programs[k]
+		findCoolKids(prog)
+		fmt.Printf("%d : %v\n", prog.id, prog.coolkid)
 	}
 }
 
@@ -64,13 +74,12 @@ func findCoolKids(p *program) {
 	if p.id == 0 {
 		p.coolkid = true
 	}
-	if p.id > 0 && p.coolkid {
-		// already identified, skip it
-	} else {
+	if p.coolkid {
+		// transmit coolness to connections
 		for _, remote := range p.pipes {
 			if p.id < remote.id {
 				// process links in ascending order to avoid dupes
-				fmt.Printf("%d hmm %d\n", p.id, remote.id)
+				remote.coolkid = true
 			}
 		}
 	}
