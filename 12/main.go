@@ -15,7 +15,7 @@ type program struct {
 	parsed   bool
 }
 
-var programs = make(map[string]*program)
+var programs = make(map[int]*program)
 var groups = make(map[int]int)
 
 func main() {
@@ -26,11 +26,11 @@ func main() {
 		parsePipes(prog)
 	}
 	// must iterate map in key order to start with 0
-	keys := make([]string, 0)
+	keys := make([]int, 0)
 	for k := range programs {
 		keys = append(keys, k)
 	}
-	sort.Strings(keys)
+	sort.Ints(keys)
 	for _, k := range keys {
 		prg := programs[k]
 		findGroups(prg)
@@ -49,12 +49,6 @@ func main() {
 			groups[prg.groupID]++
 		}
 	}
-	// list groups with more than one member
-	/*for grp, count := range groups {
-		if count == 1 {
-			fmt.Printf("%d = %d\n", grp, count)
-		}
-	}*/
 	fmt.Println("total groups =", len(groups))
 }
 
@@ -66,42 +60,27 @@ func parseLine(line string) {
 		pipes[i] = strings.TrimSuffix(pipe, ",")
 	}
 	p := program{id: id, groupID: id, rawpipes: pipes}
-	programs[words[0]] = &p
+	programs[id] = &p
 }
 
 func parsePipes(p *program) {
 	for _, remoteID := range p.rawpipes {
-		p.pipes = append(p.pipes, programs[remoteID])
+		rid, _ := strconv.Atoi(remoteID)
+		p.pipes = append(p.pipes, programs[rid])
 	}
 }
 
 func findGroups(p *program) {
-	debug := false
-	if p.id == 5 || p.id == 10 || p.id == 613 {
-		debug = true
-	}
-	if debug {
-		fmt.Println("finding ", p.id)
-	}
 	if !p.parsed {
 		p.parsed = true
 		for i := range p.pipes {
 			remote := p.pipes[i]
 			if remote.parsed {
 				// skip it
-				if debug {
-					fmt.Println("skipping1 ", remote.id)
-				}
 			} else if remote.groupID < p.groupID {
 				// skip it
-				if debug {
-					fmt.Println("skipping2 ", remote.id)
-				}
 			} else {
 				remote.groupID = p.groupID
-				if p.id == 5 || p.id == 613 || remote.id == 5 || remote.id == 613 {
-					fmt.Printf("set %d to %d\n", remote.id, remote.groupID)
-				}
 				findGroups(remote)
 			}
 		}
