@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"sort"
+	"strconv"
 	"strings"
 )
 
 type program struct {
-	id       string
+	id       int
 	rawpipes []string
 	pipes    []*program
 	coolkid  bool
@@ -29,23 +31,47 @@ func main() {
 	}
 	for _, prog := range programs {
 		parsePipes(prog)
-		fmt.Println(prog)
+	}
+	// must iterate map in key order
+	keys := make([]string, 0)
+	for k := range programs {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		findCoolKids(programs[k])
 	}
 }
 
 func parseLine(line string) {
 	words := strings.Split(line, " ")
-	id := words[0]
+	id, _ := strconv.Atoi(words[0])
 	pipes := words[2:]
 	for i, pipe := range pipes {
 		pipes[i] = strings.TrimSuffix(pipe, ",")
 	}
 	p := program{id: id, rawpipes: pipes}
-	programs[id] = &p
+	programs[words[0]] = &p
 }
 
 func parsePipes(p *program) {
 	for _, remoteID := range p.rawpipes {
 		p.pipes = append(p.pipes, programs[remoteID])
+	}
+}
+
+func findCoolKids(p *program) {
+	if p.id == 0 {
+		p.coolkid = true
+	}
+	if p.id > 0 && p.coolkid {
+		// already identified, skip it
+	} else {
+		for _, remote := range p.pipes {
+			if p.id < remote.id {
+				// process links in ascending order to avoid dupes
+				fmt.Printf("%d hmm %d\n", p.id, remote.id)
+			}
+		}
 	}
 }
