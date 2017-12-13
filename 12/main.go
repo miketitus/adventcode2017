@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"sort"
 	"strconv"
@@ -10,20 +9,14 @@ import (
 
 type program struct {
 	id       int
+	groupID  int
 	rawpipes []string
 	pipes    []*program
-	coolkid  bool
 	parsed   bool
 }
 
-func (p *program) String() string {
-	buf := bytes.NewBufferString(strconv.Itoa(p.id))
-	buf.WriteRune(':')
-	buf.WriteString(strconv.FormatBool(p.coolkid))
-	return buf.String()
-}
-
 var programs = make(map[string]*program)
+var groups = make(map[int]int)
 
 func main() {
 	for _, line := range input {
@@ -33,21 +26,36 @@ func main() {
 		parsePipes(prog)
 	}
 	// must iterate map in key order to start with 0
-	coolKids := 0
 	keys := make([]string, 0)
 	for k := range programs {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		prog := programs[k]
-		findCoolKids(prog)
-		if prog.coolkid {
-			coolKids++
-		}
-		//fmt.Printf("%d : %v : %v\n", prog.id, prog.coolkid, prog.parsed)
+		prg := programs[k]
+		findGroups(prg)
 	}
-	fmt.Println("coolKids =", coolKids)
+	// record unique groups, again in key order
+	for _, k := range keys {
+		prg := programs[k]
+		if prg.id == prg.groupID {
+			_, ok := groups[prg.groupID]
+			if !ok {
+				groups[prg.groupID] = 1
+			} else {
+				groups[prg.groupID]++
+			}
+		} else {
+			groups[prg.groupID]++
+		}
+	}
+	// list groups with more than one member
+	/*for grp, count := range groups {
+		if count == 1 {
+			fmt.Printf("%d = %d\n", grp, count)
+		}
+	}*/
+	fmt.Println("total groups =", len(groups))
 }
 
 func parseLine(line string) {
@@ -57,7 +65,7 @@ func parseLine(line string) {
 	for i, pipe := range pipes {
 		pipes[i] = strings.TrimSuffix(pipe, ",")
 	}
-	p := program{id: id, rawpipes: pipes}
+	p := program{id: id, groupID: id, rawpipes: pipes}
 	programs[words[0]] = &p
 }
 
@@ -67,30 +75,36 @@ func parsePipes(p *program) {
 	}
 }
 
-func findCoolKids(p *program) {
-	if p.id == 0 {
-		p.coolkid = true
+func findGroups(p *program) {
+	debug := false
+	if p.id == 5 || p.id == 10 || p.id == 613 {
+		debug = true
 	}
-	if p.coolkid && !p.parsed {
-		//fmt.Printf("parsing %d %p\n", p.id, p)
-		// share the coolness
+	if debug {
+		fmt.Println("finding ", p.id)
+	}
+	if !p.parsed {
 		p.parsed = true
 		for i := range p.pipes {
 			remote := p.pipes[i]
 			if remote.parsed {
 				// skip it
-				//fmt.Printf("%d %p already parsed\n", remote.id, remote)
-			} else if remote.coolkid {
+				if debug {
+					fmt.Println("skipping1 ", remote.id)
+				}
+			} else if remote.groupID < p.groupID {
 				// skip it
-				//fmt.Printf("%d %p already cool\n", remote.id, remote)
+				if debug {
+					fmt.Println("skipping2 ", remote.id)
+				}
 			} else {
-				//fmt.Printf("recursing %d %p\n", remote.id, remote)
-				remote.coolkid = true
-				findCoolKids(remote)
+				remote.groupID = p.groupID
+				if p.id == 5 || p.id == 613 || remote.id == 5 || remote.id == 613 {
+					fmt.Printf("set %d to %d\n", remote.id, remote.groupID)
+				}
+				findGroups(remote)
 			}
 		}
-	} else {
-		//fmt.Println("skipping ", p.id)
 	}
 }
 
