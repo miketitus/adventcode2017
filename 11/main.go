@@ -7,23 +7,35 @@ import (
 )
 
 var cancels = make(map[string]string)
+var substitutions = make(map[string]string)
 
 func main() {
 	buildCancels()
+	buildSubstitutions()
 	for _, line := range input {
-		fmt.Println("-------")
 		words := strings.Split(line, ",")
 		for i := 0; i < len(words)-1; i++ {
 			w := &words[i]
+			// substitute
+			if *w != "" {
+				sIdx, sub := findSubstitution(w, &words, i+1)
+				if sIdx > 0 {
+					words[i] = sub
+					words[sIdx] = ""
+				}
+			}
+			// cancel
 			if *w != "" {
 				cIdx := findCancelIndex(w, &words, i+1)
 				if cIdx > -1 {
 					words[i] = ""
 					words[cIdx] = ""
 				}
+
 			}
 		}
-		fmt.Printf("%v %d\n", words, len(words))
+		words2 := compact(&words)
+		fmt.Printf("%v %d\n", *words2, len(*words2))
 	}
 }
 
@@ -36,24 +48,56 @@ func buildCancels() {
 	cancels["nw"] = "se"
 }
 
+func buildSubstitutions() {
+	substitutions["nse"] = "ne"
+	substitutions["sen"] = "ne"
+	substitutions["nsw"] = "nw"
+	substitutions["swn"] = "nw"
+	substitutions["sne"] = "se"
+	substitutions["nes"] = "se"
+	substitutions["snw"] = "sw"
+	substitutions["nws"] = "sw"
+	substitutions["nenw"] = "n"
+	substitutions["nwne"] = "n"
+	substitutions["sesw"] = "s"
+	substitutions["swse"] = "s"
+}
+
 func findCancelIndex(s *string, words *[]string, startAt int) int {
+	// lookup canceling word
 	c, ok := cancels[*s]
 	if !ok {
 		fmt.Println("Invalid string ", s)
 		os.Exit(1)
 	}
-	i := startAt
-	for ; i < len(*words); i++ {
-		//fmt.Printf("checking %s against %s at %d\n", c, (*words)[i], i)
+	// attempt to find canceling word in remaining input
+	for i := startAt; i < len(*words); i++ {
 		if c == (*words)[i] {
-			//fmt.Printf("found cancel %s at %d\n", c, i)
-			break
+			return i
 		}
 	}
-	if i < len(*words) {
-		return i
-	}
 	return -1
+}
+
+func findSubstitution(s *string, words *[]string, startAt int) (int, string) {
+	for i := startAt; i < len(*words); i++ {
+		combo := *s + (*words)[i]
+		sub, ok := substitutions[combo]
+		if ok {
+			return i, sub
+		}
+	}
+	return -1, ""
+}
+
+func compact(words *[]string) *[]string {
+	c := []string{}
+	for i := 0; i < len(*words); i++ {
+		if (*words)[i] != "" {
+			c = append(c, (*words)[i])
+		}
+	}
+	return &c
 }
 
 var test = []string{
@@ -61,6 +105,7 @@ var test = []string{
 	"ne,ne,sw,sw",
 	"ne,ne,s,s",
 	"se,sw,se,sw,sw",
+	"n,se,se,n,n,sw,sw,n,s,ne,ne,s,s,nw,nw,s,ne,nw,nw,ne,se,sw,sw,se",
 }
 
 var input = []string{
