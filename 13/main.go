@@ -15,16 +15,30 @@ type layer struct {
 var firewall []layer
 
 func main() {
-	size := getFirewallSize(test)
+	// build firewall
+	size := getFirewallSize(input)
 	firewall = make([]layer, size, size)
-	for _, line := range test {
+	for _, line := range input {
 		parseLine(line)
 	}
-	fmt.Println(firewall)
+	// send packet through firewall
+	severity := 0
+	for i := 0; i < size; i++ {
+		lyr := firewall[i]
+		if lyr.depth == i {
+			// active layer
+			if i%lyr.period == 0 {
+				// packet detected
+				fmt.Println("detection in layer ", i)
+				severity += lyr.ranje * i
+			}
+		}
+	}
+	fmt.Println("severity =", severity)
 }
 
 func getFirewallSize(f []string) int {
-	l := f[len(test)-1]
+	l := f[len(f)-1]
 	w := strings.Split(l, ":")
 	s, _ := strconv.Atoi(w[0])
 	return s + 1
