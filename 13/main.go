@@ -13,28 +13,27 @@ type layer struct {
 }
 
 var firewall []layer
+var size int
 
 func main() {
 	// build firewall
-	size := getFirewallSize(input)
+	size = getFirewallSize(input)
 	firewall = make([]layer, size, size)
 	for _, line := range input {
 		parseLine(line)
 	}
 	// send packet through firewall
-	severity := 0
-	for i := 0; i < size; i++ {
-		lyr := firewall[i]
-		if lyr.depth == i {
-			// active layer
-			if i%lyr.period == 0 {
-				// packet detected
-				fmt.Println("detection in layer ", i)
-				severity += lyr.ranje * i
-			}
+	delay := 0
+	var detected bool
+	severity := -1
+	for true {
+		detected, severity = traverseFirewall(delay)
+		if !detected {
+			break
 		}
+		delay++
 	}
-	fmt.Println("severity =", severity)
+	fmt.Printf("delay = %d, severity = %d\n", delay, severity)
 }
 
 func getFirewallSize(f []string) int {
@@ -51,6 +50,23 @@ func parseLine(line string) {
 	p := r*2 - 2
 	l := layer{depth: d, ranje: r, period: p}
 	firewall[d] = l
+}
+
+func traverseFirewall(delay int) (bool, int) {
+	detected := false
+	severity := 0
+	for i := 0; i < size; i++ {
+		lyr := firewall[i]
+		if lyr.depth == i {
+			// layer exists (not empty)
+			if (i+delay)%lyr.period == 0 {
+				// packet detected
+				detected = true
+				severity += lyr.ranje * i
+			}
+		}
+	}
+	return detected, severity
 }
 
 var test = []string{
