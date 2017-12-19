@@ -92,8 +92,8 @@ func (cl *circularList) swapSection(start, length int) {
 		origLprev.next = right
 		origRnext.prev = left
 	}
-	// update "interior" nodes, if any
 	if length > 2 {
+		// update "interior" nodes
 		origLnext.prev = right
 		origRprev.next = left
 	}
@@ -110,9 +110,7 @@ func (cl *circularList) swapSection(start, length int) {
 
 func (cl circularList) String() string {
 	buf := bytes.NewBufferString("[")
-	if cl.zeroNode == nil {
-		// write nothing
-	} else {
+	if cl.zeroNode != nil {
 		buf.WriteRune(' ')
 		for start := cl.zeroNode; ; start = start.next {
 			buf.WriteString(strconv.Itoa(start.value))
@@ -142,6 +140,5 @@ func main() {
 		position = position % list.len()
 		skipSize++
 	}
-	fmt.Printf("pos:%d, ss:%d\n", position, skipSize)
 	fmt.Printf("list: %v\n", list)
 }
