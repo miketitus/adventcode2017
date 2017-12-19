@@ -9,9 +9,7 @@ import (
 const size = 256
 
 var list circularList
-var input = []int{
-	83, 0, 193, 1, 254, 237, 187, 40, 88, 27, 2, 255, 149, 29, 42, 100,
-}
+var input = "83,0,193,1,254,237,187,40,88,27,2,255,149,29,42,100"
 
 type cNode struct {
 	index int
@@ -131,14 +129,39 @@ func main() {
 		node := cNode{value: i}
 		list.addNode(&node)
 	}
-	// process input
+	// convert input to ascii and append
+	inputBytes := []byte(input)
+	suffixBytes := []byte{17, 31, 73, 47, 23}
+	lengths := append(inputBytes, suffixBytes...)
+	// compute sparse hash
 	position := 0
 	skipSize := 0
-	for _, length := range input {
-		list.swapSection(position, length)
-		position += length + skipSize
-		position = position % list.len()
-		skipSize++
+	for i := 0; i < 64; i++ {
+		for _, length := range lengths {
+			list.swapSection(position, int(length))
+			position += int(length) + skipSize
+			position = position % list.len()
+			skipSize++
+		}
 	}
-	fmt.Printf("list: %v\n", list)
+	// compute dense hash
+	dense := denseHash(&list)
+	// display hash in hexadecimal
+	for i := 0; i < len(dense); i++ {
+		fmt.Printf("%02x", dense[i])
+	}
+	fmt.Println()
+}
+
+func denseHash(cl *circularList) []byte {
+	dense := []byte{}
+	for i := 0; i < cl.len(); i += 16 {
+		xor := 0
+		for j := 0; j < 16; j++ {
+			node := cl.getNodeAt(i + j)
+			xor = xor ^ node.value
+		}
+		dense = append(dense, byte(xor))
+	}
+	return dense
 }
