@@ -8,7 +8,7 @@ import (
 	"github.com/miketitus/adventcode2017/aoc"
 )
 
-var key = "flqrgnkx"
+var key = "hfdlxzhv"
 var size = 128
 
 func main() {
@@ -16,7 +16,6 @@ func main() {
 	for i := 0; i < size; i++ {
 		hashInput := key + "-" + strconv.Itoa(i)
 		kh := aoc.KnotHash(hashInput)
-		//fmt.Printf("%s - ", kh)
 		for _, r := range kh {
 			bin, err := strconv.ParseUint(string(r), 16, 8)
 			if err != nil {
@@ -24,10 +23,8 @@ func main() {
 				os.Exit(1)
 
 			}
-			//fmt.Printf("%04b", bin)
 			hamming += hammingDistance(uint8(bin))
 		}
-		//fmt.Println("")
 	}
 	fmt.Printf("distance = %d\n", hamming)
 }
